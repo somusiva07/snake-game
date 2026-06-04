@@ -36,6 +36,7 @@ class Snake:
         self.body = deque([(start_x, start_y)])
         self.direction = Direction.RIGHT
         self.next_direction = Direction.RIGHT
+        self.grow_pending = False
     
     def update(self):
         # Update direction
@@ -52,12 +53,15 @@ class Snake:
         # Add new head
         self.body.appendleft((new_x, new_y))
         
-        # Remove tail (unless eating)
-        self.body.pop()
+        # Remove tail only if not growing
+        if not self.grow_pending:
+            self.body.pop()
+        else:
+            self.grow_pending = False
     
     def eat_food(self):
-        # Don't remove tail to grow the snake
-        pass
+        # Mark that snake should grow on next update
+        self.grow_pending = True
     
     def check_collision(self):
         head = self.body[0]
@@ -122,10 +126,9 @@ class Game:
             # Check if snake ate food
             if self.snake.body[0] == (self.food.x, self.food.y):
                 self.score += 10
-                # Grow snake by adding tail back
+                # Mark snake to grow
                 self.snake.eat_food()
-                # Add an extra segment
-                self.snake.body.append(self.snake.body[-1])
+                # Spawn new food
                 self.food.spawn()
             
             # Check collision
